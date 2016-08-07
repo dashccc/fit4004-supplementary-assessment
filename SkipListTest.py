@@ -11,7 +11,10 @@ from skiplist import SkipList
 
 class SkipListTest(unittest.TestCase):
     def setUp(self):
-        self.skiplist = SkipList(2)
+        '''
+        Basic setup for the unittest module.
+        '''
+        self.skiplist = SkipList(4) #Generate a maxlevel 2 ordered map
         self.aNode = [None, None, None, None]
 
     def test_makeNode(self):
@@ -44,43 +47,43 @@ class SkipListTest(unittest.TestCase):
         
     def test_findLess(self):
         '''
-        Test when given the searchKey, the _findLess method returns the part of the array which contains the searched item (if found)
+        Test when given the searchKey, the _findLess method returns the part of the array which contains the searched item
         '''
-        self.skiplist.head[3] = [1,[3,4],[5,6],[7,8,[None,0]]]
-        result = self.skiplist._findLess(self.skiplist._update, 5)
+        self.skiplist.head = [1,[3,4],[5,6],[7,8,[None,0]]]
+        result = self.skiplist._findLess(self.skiplist._update, 1)
         self.assertEqual([1, [3, 4], [5, 6], [7, 8, [None, 0]]], result)
        
     def test_items(self):
         '''
-        Test when searchKey is not None (in this case is 5) and reverse is True,
-        the method finds [5,6] and returns the next value pair in index 0 and index 1 ([7,0],[8,0])
+        Test when searchKey is not None (in this case is 1) and reverse is True,
+        the method finds all the key value pairs in the ordered map
         '''
         test_array = []
-        self.skiplist.head[3] = [1,[3,4],[5,6],[7,8,[None,0]]]
-        for item in self.skiplist.items(5, True):
+        self.skiplist.head[3] = [1,2,3,[7,8,[None,9,10],[None,10,11]]]
+        for item in self.skiplist.items(1, False):
             test_array.append(item)
-        self.assertEqual([(7, 8)], test_array)
+        self.assertEqual([(1, 2), (7, 8)], test_array)
         
     def test_items_found3_is_nil(self):
         '''
         Test when the self._foundLess return the save object as self.skiplist.nil.
-        The value of searchKey is 5 and reverse is True, but the last item of self.skiplist.head is self.skiplist.nil
+        The value of searchKey is 1 and reverse is False, but the last item of self.skiplist.head is self.skiplist.nil
         In Python, "is not" only return False when the two comparing items is referring to the same object.
         '''
         test_array = []
-        self.skiplist.head[3] = [1, [3,4], [5,6], self.skiplist.nil]
-        for item in self.skiplist.items(5, True):
+        self.skiplist.head[3] = self.skiplist.nil
+        for item in self.skiplist.items(1, False):
             test_array.append(item)
         self.assertEqual([], test_array)
-        
-    def test_items_no_args(self):
+         
+    def test_items_reverse_true(self):
         '''
-        Test when not given a searchKey (None) and reverse is False,
-        node should be [None, None, None] because self.head[3] is [None, None, None]
+        Test when not given a searchKey (None) and reverse is True,
+        node should be [None, None, None] because self.tail is [None, None, None]
         the generator should not be called and returns nothing.
         '''
         test_array = []
-        for item in self.skiplist.items():
+        for item in self.skiplist.items(None, True):
             test_array.append(item)
         self.assertEqual([], test_array)
     
@@ -121,10 +124,27 @@ class SkipListTest(unittest.TestCase):
         
     def test_delete(self):
         '''
+        Test when given searchKey, the method can successfully delete the searchKey and its value or not
         '''
-        print self.skiplist._update
-        self.skiplist.head[3] = [1,[3,4],[5,6],[7,8,[9,0],[10,11,12]]]
+        self.skiplist.head[3] = [7,8,[9,0],[10,11,12]]
         self.assertTrue(self.skiplist.delete(7))
+        
+    def test_delete_add_level(self):
+        '''
+        Test when the ordered map contains another inner ordered map, the delete method can work properly or not
+        '''
+        self.skiplist.level = 1  
+        self.skiplist.head[3] = [7,8,9,[10,11,12,[13,14,15]]]
+        self.assertTrue(self.skiplist.delete(10))
+        
+    def test_delete_node_tail(self):
+        '''
+        Test when there is only one ordered map in the list (where the tail is pointing at),
+        deleting the searchKey (10 in this case) will cause the self.skiplist.tail changes correspondingly.
+        '''
+        self.skiplist.head = [7,8,9,[10,11,12,[13,14,15]]]
+        self.skiplist.tail = self.skiplist.head[3]
+        self.assertTrue(self.skiplist.delete(10))
         
     def test_delete_no_searchKey(self):
         '''
