@@ -32,7 +32,8 @@ class PathReader:
         return self.extension
         
     def split_srcPath(self):
-        if self.srcPath is None or len(self.srcPath)==0 or len(self.srcPath.split('.'))==0:
+        if self.srcPath is None or len(self.srcPath)==0 or len(self.srcPath.split('.'))<2:
+            print 'Invalid source path...'
             return False
         else:
             return self.srcPath.split('.')
@@ -41,5 +42,7 @@ if __name__ == '__main__':
     pr = PathReader('aaa.bbb.jpg')
     print pr.get_filename()
     print pr.get_extension()
+    
+    
         
         
